@@ -4,21 +4,35 @@ import { notFoundError } from '@/errors';
 import { addressRepository, CreateAddressParams, enrollmentRepository, CreateEnrollmentParams } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
 import { AddressUser } from '@/protocols';
+import { InvalidCepError } from '@/errors/invalid-cep-error';
 
-// TODO - Receber o CEP por parâmetro nesta função.
+interface ApiAdress extends AddressUser {
+  cep: string;
+  gia: string;
+  ibge: string;
+  ddd: string;
+  siafi: string;
+  erro: boolean;
+} 
+
 async function getAddressFromCEP(cep:string) {
-
-  const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
+  if(!cep || cep.length === 0) {
+    throw InvalidCepError();
+  }
+  const result = (await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`)).data as ApiAdress;
   
-  // TODO: Tratar regras de negócio e lanças eventuais erros
+  if (result.erro == true){
+    throw InvalidCepError();
+  }
 
   const address = {
-    logradouro: result.data.logradouro,
-    complemento: result.data.complemento,
-    bairro: result.data.bairro,
-    cidade: result.data.cidade,
-    uf: result.data.uf,
+    logradouro: result.logradouro,
+    complemento: result.complemento,
+    bairro: result.bairro,
+    cidade: result.cidade,
+    uf: result.uf,
   } as AddressUser
+  
   return address;
 }
 
@@ -52,6 +66,14 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   const address = getAddressForUpsert(params.address);
 
   // TODO - Verificar se o CEP é válido antes de associar ao enrollment.
+  if(!params.address.cep || params.address.cep.length === 0) {
+    throw InvalidCepError();
+  }
+  const result = (await request.get(`${process.env.VIA_CEP_API}/${params.address.cep}/json/`)).data as ApiAdress;
+  
+  if (result.erro == true){
+    throw InvalidCepError();
+  }
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, 'userId'));
 
