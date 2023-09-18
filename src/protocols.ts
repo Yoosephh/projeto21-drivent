@@ -10,11 +10,3 @@ export type RequestError = {
   name: string;
   message: string;
 };
-
-export type AddressUser = {
-  logradouro: string,
-  complemento: string,
-  bairro: string,
-  cidade: string,
-  uf: string,
-};
