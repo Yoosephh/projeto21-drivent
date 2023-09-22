@@ -3,12 +3,12 @@ import { getUserTicket } from '@/controllers/tickets-controller';
 import { notFoundError } from '@/errors';
 
 async function ticketsType() {
-  const tickets = await prisma.ticketType.findMany({});
+  const tickets = await prisma.ticketType.findMany();
   return tickets;
 }
 
 async function getTicket(userId: number): Promise<getUserTicket> {
-  const userEnrollment = await prisma.enrollment.findUnique({
+  const userEnrollment = await prisma.enrollment.findMany({
     where: {
       userId,
     },
@@ -16,10 +16,10 @@ async function getTicket(userId: number): Promise<getUserTicket> {
       id: true,
     },
   });
-  if (userEnrollment.id === undefined) throw notFoundError();
-  const userTicket = await prisma.ticket.findUnique({
+  if (userEnrollment.length === 0) throw notFoundError();
+  const userTicket = await prisma.ticket.findMany({
     where: {
-      enrollmentId: userEnrollment.id,
+      enrollmentId: userEnrollment[0].id,
     },
     select: {
       id: true,
@@ -31,12 +31,12 @@ async function getTicket(userId: number): Promise<getUserTicket> {
       TicketType: true,
     },
   });
-  if (!userTicket.id) throw notFoundError();
-  return userTicket;
+  if (userTicket.length === 0) throw notFoundError();
+  return userTicket[0];
 }
 
 async function postTicket(ticketTypeId: number, userId: number): Promise<getUserTicket> {
-  const userEnrollment = await prisma.enrollment.findUnique({
+  const userEnrollment = await prisma.enrollment.findMany({
     where: {
       userId,
     },
@@ -44,11 +44,11 @@ async function postTicket(ticketTypeId: number, userId: number): Promise<getUser
       id: true,
     },
   });
-  if (userEnrollment.id === undefined) throw notFoundError();
+  if (userEnrollment.length === 0) throw notFoundError();
   const newTicketId = await prisma.ticket.create({
     data: {
       ticketTypeId,
-      enrollmentId: userEnrollment.id,
+      enrollmentId: userEnrollment[0].id,
       status: 'RESERVED',
     },
     select: {
