@@ -1,28 +1,41 @@
-import { ticketsRepository } from '@/repositories';
-import { getUserTicket } from '@/controllers/tickets-controller';
+import { TicketStatus } from '@prisma/client';
+import { invalidDataError, notFoundError } from '@/errors';
+import { CreateTicketParams } from '@/protocols';
+import { enrollmentRepository, ticketsRepository } from '@/repositories';
 
-async function ticketsType(): Promise<TicketType[]> {
-  const tickets = await ticketsRepository.ticketsType();
-  return tickets;
-}
-async function getTicket(userId: number): Promise<getUserTicket> {
-  const tickets = await ticketsRepository.getTicket(userId);
-  return tickets;
+async function findTicketTypes() {
+  const ticketTypes = await ticketsRepository.findTicketTypes();
+  return ticketTypes;
 }
 
-async function postTicket(ticketTypeId: number, userId: number): Promise<getUserTicket> {
-  const newTicket = await ticketsRepository.postTicket(ticketTypeId, userId);
-  return newTicket;
+async function getTicketByUserId(userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
+
+  const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
+  if (!ticket) throw notFoundError();
+
+  return ticket;
 }
 
-export type TicketType = {
-  id: number;
-  name: string;
-  price: number;
-  isRemote: boolean;
-  includesHotel: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+async function createTicket(userId: number, ticketTypeId: number) {
+  if (!ticketTypeId) throw invalidDataError('ticketTypeId');
+
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
+
+  const ticketData: CreateTicketParams = {
+    enrollmentId: enrollment.id,
+    ticketTypeId,
+    status: TicketStatus.RESERVED,
+  };
+
+  const ticket = await ticketsRepository.createTicket(ticketData);
+  return ticket;
+}
+
+export const ticketsService = {
+  findTicketTypes,
+  getTicketByUserId,
+  createTicket,
 };
-
-export const ticketsService = { ticketsType, getTicket, postTicket };
