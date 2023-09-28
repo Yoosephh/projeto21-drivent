@@ -50,6 +50,12 @@ export function handleApplicationErrors(
     });
   }
 
+  if (err.name === 'PaymentRequired') {
+    return res.status(httpStatus.PAYMENT_REQUIRED).send({
+      message: err.message,
+    });
+  }
+
   if (err.name === 'EnrollmentNotFoundError') {
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
