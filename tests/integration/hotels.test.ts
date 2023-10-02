@@ -159,7 +159,6 @@ describe('GET /hotels/:hotelId', () => {
       await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
       await createHotel();
       const response = await server.get('/hotels/5544').set('Authorization', `Bearer ${token}`);
-      console.log(response);
       expect(response.status).toBe(httpStatus.NOT_FOUND);
     });
 
