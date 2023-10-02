@@ -11,11 +11,13 @@ import {
   createTicket,
   generateCreditCardData,
 } from '../factories';
-import { createHotel, createHotelAndRoom } from '../factories/hotels-factory';
+import { createHotel, createHotelAndRoom, createRoom } from '../factories/hotels-factory';
 import app, { init } from '@/app';
 
 beforeAll(async () => {
   await init();
+});
+beforeEach(async () => {
   await cleanDb();
 });
 
@@ -67,6 +69,7 @@ describe('GET /hotels', () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(false, true);
       await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(httpStatus.NOT_FOUND);
     });
@@ -156,7 +159,7 @@ describe('GET /hotels/:hotelId', () => {
       const token = await generateValidToken(user);
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(false, true);
-      await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createHotel();
       const response = await server.get('/hotels/5544').set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(httpStatus.NOT_FOUND);
@@ -218,18 +221,29 @@ describe('GET /hotels/:hotelId', () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(false, true);
       await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const hotel = await createHotelAndRoom();
+      const hotel = await createHotel();
+      const room = await createRoom(hotel.id);
+      const response = await server.get(`/hotels/${hotel.id}`).set('Authorization', `Bearer ${token}`);
 
-      const compareHotel: any = hotel;
-      compareHotel.createdAt = compareHotel.createdAt.toISOString();
-      compareHotel.updatedAt = compareHotel.updatedAt.toISOString();
-      compareHotel.Rooms[0].createdAt = compareHotel.Rooms[0].createdAt.toISOString();
-      compareHotel.Rooms[0].updatedAt = compareHotel.Rooms[0].updatedAt.toISOString();
-
-      const response = await server.get(`/hotel/${hotel.id}`).set('Authorization', `Bearer ${token}`);
       const respBody = response.body;
       expect(response.status).toEqual(httpStatus.OK);
-      expect(respBody).toEqual(compareHotel);
+      expect(respBody).toEqual({
+        id: hotel.id,
+        name: hotel.name,
+        image: hotel.image,
+        createdAt: hotel.createdAt.toISOString(),
+        updatedAt: hotel.updatedAt.toISOString(),
+        Rooms: [
+          {
+            id: room.id,
+            name: room.name,
+            hotelId: room.hotelId,
+            capacity: room.capacity,
+            createdAt: room.createdAt.toISOString(),
+            updatedAt: room.updatedAt.toISOString(),
+          },
+        ],
+      });
     });
   });
 });

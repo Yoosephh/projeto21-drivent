@@ -9,7 +9,7 @@ async function getHotel(id: number) {
     where: {
       id,
     },
-    select: {
+    include: {
       Rooms: true,
     },
   });
