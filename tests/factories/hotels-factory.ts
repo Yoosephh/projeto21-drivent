@@ -7,6 +7,9 @@ export async function createHotel() {
       name: faker.company.companyName(),
       image: faker.image.imageUrl(),
     },
+    select: {
+      id: true,
+    },
   });
 }
 
