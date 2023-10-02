@@ -17,6 +17,7 @@ async function getHotels(userId: number) {
 
 async function getHotel(userId: number, hotelId: number) {
   const enrollment = await enrollmentRepository.selectEnrollmentTicket(userId);
+
   if (!enrollment) throw notFoundError();
   if (!enrollment.Ticket) throw notFoundError();
   if (enrollment.Ticket.status !== 'PAID') throw paymentRequired();

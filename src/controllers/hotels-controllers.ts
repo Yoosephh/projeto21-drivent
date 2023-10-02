@@ -14,8 +14,10 @@ export async function getHotel(req: AuthenticatedRequest, res: Response) {
   if (!req.params.hotelId || isNaN(parseInt(req.params.hotelId))) {
     throw invalidDataError('Format of hotelId is not valid, must be a number.');
   }
+
   const hotelId = Number(req.params.hotelId);
   const userId = Number(req.body.userId);
   const hotel = await services.getHotel(userId, hotelId);
+
   res.status(httpStatus.OK).send(hotel);
 }
