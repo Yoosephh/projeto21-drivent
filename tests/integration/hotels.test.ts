@@ -80,7 +80,7 @@ describe('GET /hotels', () => {
       const user = await createUser();
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(true, true);
-      await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createHotel();
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
@@ -90,11 +90,11 @@ describe('GET /hotels', () => {
       const user = await createUser();
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(false, false);
-      await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       await createHotel();
 
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(httpStatus.PAYMENT_REQUIRED);
     });
   });
-})
+});

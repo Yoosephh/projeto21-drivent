@@ -1,5 +1,5 @@
-import { invalidDataError, notFoundError, paymentRequired } from '@/errors';
-import { enrollmentRepository, ticketsRepository } from '@/repositories';
+import { notFoundError, paymentRequired } from '@/errors';
+import { enrollmentRepository } from '@/repositories';
 import { repositories } from '@/repositories/hotel-repositories';
 
 async function getHotels(userId: number) {
@@ -7,7 +7,7 @@ async function getHotels(userId: number) {
   if (!enrollment) throw notFoundError();
   if (!enrollment.Ticket) throw notFoundError();
   if (enrollment.Ticket.status !== 'PAID') throw paymentRequired();
-  if (enrollment.Ticket.TicketType.includesHotel === false) paymentRequired();
+  if (enrollment.Ticket.TicketType.includesHotel === false) throw paymentRequired();
   if (enrollment.Ticket.TicketType.isRemote === true) throw paymentRequired();
 
   const hotels = await repositories.getHotels();
@@ -16,15 +16,12 @@ async function getHotels(userId: number) {
 }
 
 async function getHotel(userId: number, hotelId: number) {
-  if (isNaN(hotelId)) {
-    throw invalidDataError('Format of hotelId is not valid, must be a number.');
-  }
   const enrollment = await enrollmentRepository.selectEnrollmentTicket(userId);
   if (!enrollment) throw notFoundError();
   if (!enrollment.Ticket) throw notFoundError();
   if (enrollment.Ticket.status !== 'PAID') throw paymentRequired();
-  if (enrollment.Ticket.TicketType.includesHotel === false) paymentRequired();
   if (enrollment.Ticket.TicketType.isRemote === true) throw paymentRequired();
+  if (enrollment.Ticket.TicketType.includesHotel === false) throw paymentRequired();
 
   const hotel = await repositories.getHotel(hotelId);
   if (hotel === null) throw notFoundError();
