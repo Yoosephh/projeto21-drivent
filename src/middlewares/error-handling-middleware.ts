@@ -50,18 +50,16 @@ export function handleApplicationErrors(
     });
   }
 
-  if (err.name === 'PaymentRequired') {
-    return res.status(httpStatus.PAYMENT_REQUIRED).send({
-      message: err.message,
-    });
-  }
-
   if (err.name === 'EnrollmentNotFoundError') {
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 
   if (err.name === 'InvalidCEPError') {
     return res.status(httpStatus.BAD_REQUEST).send(err.message);
+  }
+
+  if (err.name === 'CannotListHotelsError') {
+    return res.status(httpStatus.PAYMENT_REQUIRED).send(err.message);
   }
 
   if (err.hasOwnProperty('status') && err.name === 'RequestError') {
