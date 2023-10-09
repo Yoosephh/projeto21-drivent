@@ -22,6 +22,10 @@ async function createBooking(roomId: number, userId: number) {
   if (userTicketInfo.TicketType.isRemote) {
     throw invalidTicketError('Enrollment shoud be presencial in order to make a booking.');
   }
+  capacityAndRoomValidation(
+    await bookingRepository.findRoomById(roomId),
+    await bookingRepository.bookingListByRoom(roomId),
+  );
 
   return await bookingRepository.createBooking(userId, roomId);
 }

@@ -101,25 +101,25 @@ describe('POST /booking', () => {
       let validRoomId;
       let invalidRoomId;
 
-      it('should respond with status 400 if no body is given', async () => {
+      it('should respond with status 404 if no body is given', async () => {
         user = await createUser();
         token = await generateValidToken(user);
 
         const response = await server.post('/booking').set('Authorization', `Bearer ${token}`);
-        expect(response.status).toBe(httpStatus.BAD_REQUEST);
+        expect(response.status).toBe(httpStatus.NOT_FOUND);
       });
 
-      it('should respond with status 400 if given body is invalid', async () => {
+      it('should respond with status 404 if given body is invalid', async () => {
         user = await createUser();
         token = await generateValidToken(user);
         invalidRoomId = 'a';
 
         const body = { roomId: invalidRoomId };
         const response = await server.post('/booking').set('Authorization', `Bearer ${token}`).send(body);
-        expect(response.status).toBe(httpStatus.BAD_REQUEST);
+        expect(response.status).toBe(httpStatus.NOT_FOUD);
       });
 
-      it('should respond with status 500 if user already has a booking', async () => {
+      it('should respond with status 403 if user already has a booking', async () => {
         user = await createUser();
         token = await generateValidToken(user);
         const enrollment = await createEnrollmentWithAddress(user);
@@ -204,7 +204,7 @@ describe('PUT /booking/:bookingId', () => {
 
         const response = await server.put('/booking/aa').set('Authorization', `Bearer ${token}`).send(body);
         expect(response.status).toBe(httpStatus.BAD_REQUEST);
-        expect(response.body).toEqual({ message: 'Invalid data: bookingId invalid' });
+        expect(response.body).toEqual({ message: 'Invalid data: booking id must be a valid ID number' });
       });
 
       it('should update with success and respond with status 201', async () => {

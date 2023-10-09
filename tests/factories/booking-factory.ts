@@ -50,7 +50,7 @@ export function createBooking(userId: number, roomId: number): Booking {
   };
 }
 
-export function createBookingAndRoom(userId?: number): { id: number; Room: Room; userId?: number } {
+export function createRoomWithBooking(userId?: number): { id: number; Room: Room; userId?: number } {
   const roomData = createRoom(Number(faker.random.numeric(1)));
   const userData = userId ? { userId } : {};
 
