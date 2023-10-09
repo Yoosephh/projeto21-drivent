@@ -1,8 +1,8 @@
+import { Booking, Room } from '@prisma/client';
 import { forbiddenError, notFoundError } from '@/errors';
 import { invalidTicketError } from '@/errors/ticket-error';
 import { ticketsRepository } from '@/repositories';
 import { bookingRepository } from '@/repositories/booking-repository';
-import { Booking, Room } from '@prisma/client';
 
 async function getBooking(userId: number) {
   const userBooking = await bookingRepository.findBookingByUserId(userId);
@@ -18,9 +18,11 @@ async function createBooking(roomId: number, userId: number) {
   if (!userTicketInfo.TicketType.includesHotel) {
     throw invalidTicketError('Ticket should include hotel in order to make a booking.');
   }
+
   if (userTicketInfo.TicketType.isRemote) {
     throw invalidTicketError('Enrollment shoud be presencial in order to make a booking.');
   }
+
   return await bookingRepository.createBooking(userId, roomId);
 }
 
@@ -39,7 +41,10 @@ async function updateBooking(roomId: number, userId: number, bookingId: number) 
 
 function capacityAndRoomValidation(room: Room, booking: Booking[]) {
   if (!room) throw notFoundError();
-  if (booking.length >= room.capacity) throw forbiddenError('Room capacity reached. Pick a different room.');
+
+  if (booking.length >= room.capacity) {
+    throw forbiddenError('Room capacity reached. Pick a different room.');
+  }
 }
 
 export const bookingService = {
