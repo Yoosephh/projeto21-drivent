@@ -15,6 +15,7 @@ async function createBooking(roomId: number, userId: number) {
   const userTicketInfo = await ticketsRepository.findTicketByUserId(userId);
   if (userTicketInfo === null) throw notFoundError();
   if (userTicketInfo.status !== 'PAID') throw invalidTicketError('Ticket status must be paid!');
+
   if (!userTicketInfo.TicketType.includesHotel) {
     throw invalidTicketError('Ticket should include hotel in order to make a booking.');
   }
