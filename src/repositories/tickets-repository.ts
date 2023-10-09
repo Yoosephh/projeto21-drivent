@@ -16,6 +16,25 @@ async function findTicketByEnrollmentId(enrollmentId: number) {
   return result;
 }
 
+async function findTicketByUserId(userId: number) {
+  return await prisma.ticket.findFirst({
+    where: {
+      Enrollment: {
+        userId,
+      },
+    },
+    select: {
+      status: true,
+      TicketType: {
+        select: {
+          isRemote: true,
+          includesHotel: true,
+        },
+      },
+    },
+  });
+}
+
 async function createTicket(ticket: CreateTicketParams) {
   const result = await prisma.ticket.create({
     data: ticket,
@@ -53,4 +72,5 @@ export const ticketsRepository = {
   createTicket,
   findTicketById,
   ticketProcessPayment,
+  findTicketByUserId,
 };
